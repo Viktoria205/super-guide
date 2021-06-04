@@ -16,6 +16,7 @@ SNAKE_COLOR = (0, 102, 0)
 COUNT_BLOCKS = 20
 HEADER_MARGIN = 70
 MARGIN = 1
+DIFFICULTY = ['EASY']
 size = (SIZE_BLOCK * COUNT_BLOCKS + 2 * SIZE_BLOCK + MARGIN * COUNT_BLOCKS,
         SIZE_BLOCK * COUNT_BLOCKS + 2 * SIZE_BLOCK + MARGIN * SIZE_BLOCK + HEADER_MARGIN)
 print(size)
@@ -28,6 +29,7 @@ class SnakeBlock:
     def __init__(self, x, y):
         self.x = x
         self.y = y
+        pygame.mixer.init()
         
     def inside(self):
         return 0 <= self.x < SIZE_BLOCK and 0 <= self.y < SIZE_BLOCK
@@ -40,8 +42,16 @@ def draw_block(color, row, column):
     pygame.draw.rect(screen, color, [SIZE_BLOCK + column * SIZE_BLOCK + MARGIN * (column + 1), 
                                              HEADER_MARGIN + SIZE_BLOCK + row * SIZE_BLOCK + MARGIN * (row + 1), 
                                              SIZE_BLOCK, SIZE_BLOCK])
-
-def start_the_game():    
+def set_difficulty(value: tuple[any, int], difficulty: str):
+    selected, index = value
+    print('Selected difficulty: "{0}" ({1}) at index {2}'
+          ''.format(selected, difficulty, index))
+    DIFFICULTY[0] = difficulty
+    
+def start_the_game(difficulty: list) : 
+    assert isinstance(difficulty, list)
+    difficulty = difficulty[0]
+    assert isinstance(difficulty, str)
     
     def random_block():
         x = random.randint(0, COUNT_BLOCKS - 1)
@@ -60,7 +70,7 @@ def start_the_game():
     speed = 1
 
     while True:
-    
+        pygame.mixer.music.pause()
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 print('exit')
@@ -99,9 +109,9 @@ def start_the_game():
     
         head = snake_block[-1]
         if not head.inside() :
+            crash = pygame.mixer.Sound('crash.mp3')
+            pygame.mixer.Sound.play(crash)
             print('crash')
-            #pygame.quit()
-            #sys.exit()
             break
         
         draw_block(RED, apple.x, apple.y)
@@ -111,6 +121,8 @@ def start_the_game():
         pygame.display.flip()
         
         if apple == head:
+            sound = pygame.mixer.Sound('sound.mp3')
+            pygame.mixer.Sound.play(sound)
             total += 1
             speed = total//5 + 1
             snake_block.append(apple)
@@ -122,31 +134,34 @@ def start_the_game():
         new_head = SnakeBlock(head.x + d_row, head.y + d_col)
     
         if new_head in snake_block:
+            crash = pygame.mixer.Sound('crash.mp3')
+            pygame.mixer.Sound.play(crash)
             print("crash yourself")
-            #pygame.quit()
-            #sys.exit()
             break
         
         snake_block.append(new_head)
         snake_block.pop(0)
     
-    
-        timer.tick(3 + speed)
-    
-"""def set_difficulty(value, difficulty):
-    # Do the job here !
-    pass"""
+        if difficulty == 'EASY':
+            timer.tick(3 + speed)
+        elif difficulty == 'HARD':
+            timer.tick(5 + speed)
 
 theme = pygame_menu.themes.THEME_GREEN
 theme.set_background_color_opacity(0.87)
-menu = pygame_menu.Menu('Welcome', 300, 260,
+menu = pygame_menu.Menu('Welcome', 430, 400,
                        theme = theme)
 
 menu.add.text_input('Name : ', default = 'Player 1')
-#menu.add.selector('Difficulty :', [('Hard', 1), ('Easy', 2)], onchange = set_difficulty)
-menu.add.button('Play', start_the_game)
+menu.add.button('Rules')
+menu.add.selector('Select difficulty :', [('Easy', 'EASY'), ('Hard', 'HARD')], onchange = set_difficulty)
+menu.add.button('Play', start_the_game, DIFFICULTY)
+menu.add.button('Best scores')
 menu.add.button('About author')
-menu.add.button('Quit', pygame_menu.events.EXIT)
+menu.add.button('Exit', pygame_menu.events.EXIT)
+pygame.mixer.music.load('background.mp3')
+pygame.mixer.music.play()
+
 while True:
 
     screen.blit(bg_image, (0,0))
