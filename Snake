@@ -16,6 +16,7 @@ SNAKE_COLOR = (0, 102, 0)
 COUNT_BLOCKS = 20
 HEADER_MARGIN = 70
 MARGIN = 1
+health = 3
 DIFFICULTY = ['EASY']
 size = (SIZE_BLOCK * COUNT_BLOCKS + 2 * SIZE_BLOCK + MARGIN * COUNT_BLOCKS,
         SIZE_BLOCK * COUNT_BLOCKS + 2 * SIZE_BLOCK + MARGIN * SIZE_BLOCK + HEADER_MARGIN)
@@ -23,7 +24,9 @@ print(size)
 screen = pygame.display.set_mode(size)
 pygame.display.set_caption('Snake')
 timer = pygame.time.Clock()
-courier = pygame.font.SysFont('courier', 36)
+courier = pygame.font.SysFont('courier', 28)
+health_img = pygame.image.load('heart.jpg')
+health_img = pygame.transform.scale(health_img, (30, 30))
 
 class SnakeBlock:
     def __init__(self, x, y):
@@ -37,11 +40,60 @@ class SnakeBlock:
     def __eq__(self, other):
         return isinstance(other, SnakeBlock) and self.x == other.x and self.y == other.y
     
-        
+    
 def draw_block(color, row, column):
     pygame.draw.rect(screen, color, [SIZE_BLOCK + column * SIZE_BLOCK + MARGIN * (column + 1), 
                                              HEADER_MARGIN + SIZE_BLOCK + row * SIZE_BLOCK + MARGIN * (row + 1), 
                                              SIZE_BLOCK, SIZE_BLOCK])
+    
+def show_health():
+    global health
+    show = 0
+    k = 330
+    while show != health:
+        screen.blit(health_img, (k , 20))
+        k += 40
+        show += 1
+        
+def check_health():
+    global health
+    health -= 1
+    if health == 0:
+        pygame.mixer.Sound.play()
+        return False
+    else:
+        crash = pygame.mixer.Sound('crash.mp3')
+        pygame.mixer.Sound.play(crash)
+        return True
+
+RULES = ['In the Snake game, the player uses the','arrow keys to move the snake around',
+ 'the board. When the snake finds food,', 'it eats it and thus is large in size.',
+ 'The game ends when the snake either', 'leaves the screen or enters itself.',
+ 'You have 3 lives. The goal is to make the', 'snake as big as possible and earn points',
+'before doing it.']
+rules = pygame_menu.Menu(
+        height = size[1] * 0.83,
+        theme = pygame_menu.themes.THEME_GREEN,
+        title = 'Rules',
+        width = size[0]  * 0.95)
+for m in RULES:
+    rules.add.label(m ,align = pygame_menu.locals.ALIGN_LEFT, font_size = 20)
+    rules.add.vertical_margin(5)
+
+ABOUT_AUTHOR = ['My name is Viktoriia.','I am a 1st year student of WUST.',
+ 'I created a Snake because I remembered', 'how I loved to play if as a child.',
+ 'I am very glad that you are playing my game.']
+about_author = pygame_menu.Menu(
+        height = size[1] * 0.7,
+        theme = pygame_menu.themes.THEME_GREEN,
+        title = 'About author',
+        width = size[0]  * 0.95)
+for m in ABOUT_AUTHOR:
+    about_author.add.label(m ,align = pygame_menu.locals.ALIGN_LEFT, font_size = 20)
+    about_author.add.vertical_margin(5)
+
+
+      
 def set_difficulty(value: tuple[any, int], difficulty: str):
     selected, index = value
     print('Selected difficulty: "{0}" ({1}) at index {2}'
@@ -71,6 +123,7 @@ def start_the_game(difficulty: list) :
 
     while True:
         pygame.mixer.music.pause()
+        
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 print('exit')
@@ -96,7 +149,8 @@ def start_the_game(difficulty: list) :
         text_total = courier.render(f"Total: {total}", 0, WHITE)
         text_speed = courier.render(f"Speed: {speed}", 0, WHITE)
         screen.blit(text_total, (SIZE_BLOCK, SIZE_BLOCK))
-        screen.blit(text_speed, (SIZE_BLOCK + 230, SIZE_BLOCK))
+        screen.blit(text_speed, (SIZE_BLOCK + 150, SIZE_BLOCK))
+        show_health()
     
         for row in range(COUNT_BLOCKS):
             for column in range(COUNT_BLOCKS):
@@ -108,15 +162,17 @@ def start_the_game(difficulty: list) :
                 draw_block(color, row, column)
     
         head = snake_block[-1]
-        if not head.inside() :
-            crash = pygame.mixer.Sound('crash.mp3')
-            pygame.mixer.Sound.play(crash)
-            print('crash')
-            break
+        
+        if not head.inside():
+            check_health()
+            snake_block = [SnakeBlock(9, 8), SnakeBlock(9, 9), SnakeBlock(9, 10)]
+                
         
         draw_block(RED, apple.x, apple.y)
+        
         for block in snake_block:
             draw_block(SNAKE_COLOR, block.x, block.y)
+            
         
         pygame.display.flip()
         
@@ -134,10 +190,9 @@ def start_the_game(difficulty: list) :
         new_head = SnakeBlock(head.x + d_row, head.y + d_col)
     
         if new_head in snake_block:
-            crash = pygame.mixer.Sound('crash.mp3')
-            pygame.mixer.Sound.play(crash)
-            print("crash yourself")
-            break
+            check_health()
+            snake_block = [SnakeBlock(9, 8), SnakeBlock(9, 9), SnakeBlock(9, 10)]
+            
         
         snake_block.append(new_head)
         snake_block.pop(0)
@@ -146,6 +201,7 @@ def start_the_game(difficulty: list) :
             timer.tick(3 + speed)
         elif difficulty == 'HARD':
             timer.tick(5 + speed)
+            
 
 theme = pygame_menu.themes.THEME_GREEN
 theme.set_background_color_opacity(0.87)
@@ -153,11 +209,11 @@ menu = pygame_menu.Menu('Welcome', 430, 400,
                        theme = theme)
 
 menu.add.text_input('Name : ', default = 'Player 1')
-menu.add.button('Rules')
-menu.add.selector('Select difficulty :', [('Easy', 'EASY'), ('Hard', 'HARD')], onchange = set_difficulty)
 menu.add.button('Play', start_the_game, DIFFICULTY)
+menu.add.selector('Difficulty :', [('Speed low', 'EASY'), ('Speed high', 'HARD')], onchange = set_difficulty)
+menu.add.button('Rules', rules)
 menu.add.button('Best scores')
-menu.add.button('About author')
+menu.add.button('About author', about_author)
 menu.add.button('Exit', pygame_menu.events.EXIT)
 pygame.mixer.music.load('background.mp3')
 pygame.mixer.music.play()
