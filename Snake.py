@@ -2,6 +2,8 @@
 
 import pygame
 import sys
+import os
+import time
 import random
 import pygame_menu
 pygame.init()
@@ -21,6 +23,7 @@ COUNT_BLOCKS = 20
 HEADER_MARGIN = 70
 MARGIN = 1
 health = 3
+stageon = True
 DIFFICULTY = ['EASY']
 size = (SIZE_BLOCK * COUNT_BLOCKS + 2 * SIZE_BLOCK + MARGIN * COUNT_BLOCKS,
         SIZE_BLOCK * COUNT_BLOCKS + 2 * SIZE_BLOCK + MARGIN * SIZE_BLOCK + HEADER_MARGIN)
@@ -36,11 +39,11 @@ health_img = pygame.transform.scale(health_img, (30, 30))
 
 RULES = ['In the Snake game, the player uses the','arrow keys to move the snake around',
  'the board. When the snake finds food,', 'it eats it and thus is large in size.',           #Menu dla Rules
- 'The game ends when the snake either', 'leaves the screen or enters itself.',
- 'You have 3 lives. The goal is to make the', 'snake as big as possible and earn points',
-'before doing it.']
+ 'You have 3 lives and 4 tries. When the snake', 'leaves the playing field or stumbles',
+ 'with itself, one life is lost and the snake', 'appears from the brown square (house).',
+'The goal is to make the snake as big', 'as possible and earn points.']
 rules = pygame_menu.Menu(
-        height = size[1] * 0.83,
+        height = size[1] * 0.9,
         theme = pygame_menu.themes.THEME_GREEN,
         title = 'Rules',
         width = size[0]  * 0.95)
@@ -127,7 +130,19 @@ def show_health():
         screen.blit(health_img, (k , 20))
         k += 40
         show += 1
-
+def show_game_over(total):
+    font = pygame.font.SysFont('arial', 30)
+    f = font.render('Game over', True, BROWN)
+    f_esc = font.render(f'Your score : {total}', True, BROWN)
+    #screen.fill('dead_snake.jpg')
+    screen.blit(pygame.image.load('dead_snake.jpg'), (0,0))
+    screen.blit(f, (90,115))
+    screen.blit(f_esc, (78,150))
+    pygame.display.flip()
+    time.sleep(5)
+    os._exit(0)
+    pygame.quit()
+    stageon = False
 def set_difficulty(value: tuple[any, int], difficulty: str):
     """Funkcja, ktora sprawdza jaki poziom trudnosci jest wybrany.
      
@@ -163,7 +178,8 @@ def start_the_game(difficulty: list) :
     total = 0
     speed = 1
     
-    while True:
+    while stageon:
+        global health
         pygame.mixer.music.pause()
         
         for event in pygame.event.get():
@@ -204,47 +220,64 @@ def start_the_game(difficulty: list) :
                 draw_block(color, row, column)   #Rysowanie pola dla gry
         draw_block(BROWN, 1, 19)        #Rysowanie domku
         
-        global health
         head = snake_block[-1]
         
         for x in range(20):                              #Zderzenia ze scianami dla liczniku zyc
             if head == SnakeBlock(x, 20):
                 crash = pygame.mixer.Sound('crash.mp3')
                 pygame.mixer.Sound.play(crash)
-                health -= 1
-                head = SnakeBlock(1, 19)
-                d_row = buf_row = 0
-                d_col = buf_col = -1
+                if health == 0:
+
+                    show_game_over(total)
+                    return False
+                else:
+                    health -= 1
+                    head = SnakeBlock(1, 19)
+                    d_row = buf_row = 0
+                    d_col = buf_col = -1
                 
         for x in range(20):
             if head == SnakeBlock(x, -1):
                 crash = pygame.mixer.Sound('crash.mp3')
                 pygame.mixer.Sound.play(crash)
-                health -= 1
-                head = SnakeBlock(1, 19)
-                d_row = buf_row = 0
-                d_col = buf_col = -1
+                if health == 0:
+
+                    show_game_over(total)
+                    return False
+                else:
+                    health -= 1
+                    head = SnakeBlock(1, 19)
+                    d_row = buf_row = 0
+                    d_col = buf_col = -1
                 
         for x in range(20):
             if head == SnakeBlock(20, x):
                 crash = pygame.mixer.Sound('crash.mp3')
                 pygame.mixer.Sound.play(crash)
-                health -= 1
-                head = SnakeBlock(1, 19)
-                d_row = buf_row = 0
-                d_col = buf_col = -1
+                if health == 0:
+
+                    show_game_over(total)
+                    return False
+                else:
+                    health -= 1
+                    head = SnakeBlock(1, 19)
+                    d_row = buf_row = 0
+                    d_col = buf_col = -1
                 
         for x in range(20):
             if head == SnakeBlock(-1, x):
                 crash = pygame.mixer.Sound('crash.mp3')
                 pygame.mixer.Sound.play(crash)
-                health -= 1
-                head = SnakeBlock(1, 19)
-                d_row = buf_row = 0
-                d_col = buf_col = -1
-        
-        if health == 0:
-            return False
+                if health == 0:
+
+                    show_game_over(total)
+                    return False
+                else:
+                    health -= 1
+                    head = SnakeBlock(1, 19)
+                    d_row = buf_row = 0
+                    d_col = buf_col = -1
+            
             
         draw_block(RED, apple.x, apple.y)   #Rysowanie jablka
         
@@ -269,12 +302,15 @@ def start_the_game(difficulty: list) :
         if new_head in snake_block:              #Sprawdzenie czy Snake nie zdarzyla sie sama z soba
             crash = pygame.mixer.Sound('crash.mp3')
             pygame.mixer.Sound.play(crash)
-            health -=1
-            new_head = SnakeBlock(1, 18)
-            d_row = buf_row = 0
-            d_col = buf_col = -1
-        if health == 0:
-            return False
+            if health == 0:
+
+                show_game_over(total)
+                return False
+            else :
+                health -=1
+                new_head = SnakeBlock(1, 18)
+                d_row = buf_row = 0
+                d_col = buf_col = -1
             
         
         snake_block.append(new_head)
@@ -312,3 +348,10 @@ while True:
         menu.draw(screen)
 
     pygame.display.update()
+     
+    if stageon == False:
+        pygame.display.flip()
+        time.sleep(5)
+        os._exit(0)
+        pygame.quit()
+        
