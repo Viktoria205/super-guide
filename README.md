@@ -13,8 +13,14 @@ I am a student at Wrocław University of Science and Technology and this is my p
 
 ## How to run this app
 1. Clone the project:
-
+'''javascript
+git clone https://github.com/Viktoria205/super_Snake.git 
+'''
 2. Install the project's development and runtime requirements:
-pip install -r requirements.txt
+'''javascript
+pip install -r requirements.txt 
+'''
 3. Run the game: 
-python Snake.py
+'''javascript
+python Snake.py 
+'''
