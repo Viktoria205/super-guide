@@ -9,7 +9,7 @@ import pygame_menu
 pygame.init()
 
 surface = pygame.display.set_mode((600, 400)) #Tworzenie okna gry
-bg_image = pygame.image.load('snake.jpg')
+bg_image = pygame.image.load(os.path.join('images', 'snake.jpg'))
 HIGH_SCORES = 'highscore.txt'
 SIZE_BLOCK = 20                       #Kolory i glowne wartosci
 FRAME_COLOR = (0, 255, 204)
@@ -33,7 +33,7 @@ screen = pygame.display.set_mode(size)
 pygame.display.set_caption('Snake')
 timer = pygame.time.Clock()
 courier = pygame.font.SysFont('courier', 28)
-health_img = pygame.image.load('heart.jpg')
+health_img = pygame.image.load(os.path.join('images', 'heart.jpg'))
 health_img = pygame.transform.scale(health_img, (30, 30))
     
 
@@ -71,7 +71,7 @@ high = pygame_menu.Menu(
 open_txt = open(HIGH_SCORES, 'r')
 text = 'High score : ' + open_txt.read()                                            #Menu dla High score
 high.add.label(text, align = pygame_menu.locals.ALIGN_CENTER, font_size = 40)
-high.add.image('high.jpg', angle = 0, scale = (0.15, 0.15))
+high.add.image(os.path.join('images', 'high.jpg'), angle = 0, scale = (0.15, 0.15))
 open_txt.close()
     
 class SnakeBlock:
@@ -134,8 +134,7 @@ def show_game_over(total):
     font = pygame.font.SysFont('arial', 30)
     f = font.render('Game over', True, BROWN)
     f_esc = font.render(f'Your score : {total}', True, BROWN)
-    #screen.fill('dead_snake.jpg')
-    screen.blit(pygame.image.load('dead_snake.jpg'), (0,0))
+    screen.blit(pygame.image.load(os.path.join('images', 'dead_snake.jpg')), (0,0))
     screen.blit(f, (90,115))
     screen.blit(f_esc, (78,150))
     pygame.display.flip()
@@ -143,6 +142,7 @@ def show_game_over(total):
     os._exit(0)
     pygame.quit()
     stageon = False
+    
 def set_difficulty(value: tuple[any, int], difficulty: str):
     """Funkcja, ktora sprawdza jaki poziom trudnosci jest wybrany.
      
@@ -224,7 +224,7 @@ def start_the_game(difficulty: list) :
         
         for x in range(20):                              #Zderzenia ze scianami dla liczniku zyc
             if head == SnakeBlock(x, 20):
-                crash = pygame.mixer.Sound('crash.mp3')
+                crash = pygame.mixer.Sound(os.path.join('sound', 'crash.mp3'))
                 pygame.mixer.Sound.play(crash)
                 if health == 0:
 
@@ -238,7 +238,7 @@ def start_the_game(difficulty: list) :
                 
         for x in range(20):
             if head == SnakeBlock(x, -1):
-                crash = pygame.mixer.Sound('crash.mp3')
+                crash = pygame.mixer.Sound(os.path.join('sound', 'crash.mp3'))
                 pygame.mixer.Sound.play(crash)
                 if health == 0:
 
@@ -252,7 +252,7 @@ def start_the_game(difficulty: list) :
                 
         for x in range(20):
             if head == SnakeBlock(20, x):
-                crash = pygame.mixer.Sound('crash.mp3')
+                crash = pygame.mixer.Sound(os.path.join('sound', 'crash.mp3'))
                 pygame.mixer.Sound.play(crash)
                 if health == 0:
 
@@ -266,7 +266,7 @@ def start_the_game(difficulty: list) :
                 
         for x in range(20):
             if head == SnakeBlock(-1, x):
-                crash = pygame.mixer.Sound('crash.mp3')
+                crash = pygame.mixer.Sound(os.path.join('sound', 'crash.mp3'))
                 pygame.mixer.Sound.play(crash)
                 if health == 0:
 
@@ -287,7 +287,7 @@ def start_the_game(difficulty: list) :
         pygame.display.flip()      
         
         if apple == head:                           #"Dodanie" jablka do Snake
-            sound = pygame.mixer.Sound('sound.mp3')
+            sound = pygame.mixer.Sound(os.path.join('sound', 'sound.mp3'))
             pygame.mixer.Sound.play(sound)
             total += 1
             speed = total//5 + 1
@@ -300,7 +300,7 @@ def start_the_game(difficulty: list) :
         new_head = SnakeBlock(head.x + d_row, head.y + d_col)
     
         if new_head in snake_block:              #Sprawdzenie czy Snake nie zdarzyla sie sama z soba
-            crash = pygame.mixer.Sound('crash.mp3')
+            crash = pygame.mixer.Sound(os.path.join('sound', 'crash.mp3'))
             pygame.mixer.Sound.play(crash)
             if health == 0:
 
@@ -331,7 +331,7 @@ menu.add.button('Rules', rules)
 menu.add.button('High score', high)
 menu.add.button('About author', about_author)
 menu.add.button('Exit', pygame_menu.events.EXIT)
-pygame.mixer.music.load('background.mp3')
+pygame.mixer.music.load(os.path.join('sound', 'background.mp3'))
 pygame.mixer.music.play()
 
 while True:
