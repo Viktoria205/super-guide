@@ -8,8 +8,8 @@ I am a student at Wrocław University of Science and Technology and this is my p
 ![Game](/images/gra1.png "Munu of game")
 
 ## Technologies
-* **Python** - Programming language of whole project (version recommended 3.9.0).
-* **Pygame** - Python's library for making games.
+* **Python** - Programming language of whole project (version recommended 3.9.0)
+* **Pygame** - Python's library for making games
 
 ## How to run this app
 1. Clone the project:
