@@ -10,3 +10,11 @@ I am a student at Wrocław University of Science and Technology and this is my p
 ## Technologies
 * **Python** - Programming language of whole project (version recommended 3.9.0).
 * **Pygame** - Python's library for making games.
+
+## How to run this app
+1. Clone the project:
+
+2. Install the project's development and runtime requirements:
+pip install -r requirements.txt
+3. Run the game: 
+python Snake.py
