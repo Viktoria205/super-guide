@@ -15,6 +15,7 @@ I am a student at Wrocław University of Science and Technology and this is my p
 1. Clone the project:
 ```
 git clone https://github.com/Viktoria205/super_Snake.git 
+cd super-Snake
 ```
 2. Install the project's development and runtime requirements:
 ```
